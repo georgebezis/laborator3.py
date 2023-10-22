@@ -21,7 +21,7 @@ while True:
 
         break
     cv2.imshow('Original', frame)
-   # cv2.imshow('trapez',frame2)
+    cv2.imshow('trapez',frame2)
     cv2.imshow('road',frame3)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
