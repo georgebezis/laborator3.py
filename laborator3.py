@@ -15,13 +15,13 @@ while True:
     points_trapez=np.array([upper_right,upper_left,lower_left,lower_right],dtype=np.int32)
     frame2=cv2.fillConvexPoly(frame2,points_trapez,1)
     frame3=frame2*frame
-    print("pc")
+    
 
     if ret is False:
 
         break
     cv2.imshow('Original', frame)
-    cv2.imshow('trapez',frame2)
+   # cv2.imshow('trapez',frame2)
     cv2.imshow('road',frame3)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
