@@ -18,8 +18,8 @@ while True:
 
     upper_left=(int(640*0.45),int(400*0.78))
     upper_right=(int(640*0.55),int(400*0.78))
-    lower_left=(0,400)
-    lower_right=(640,400)
+    lower_left=(0,380)
+    lower_right=(640,380)
     bounds_trapez=np.array([upper_right,upper_left,lower_left,lower_right],dtype=np.int32)
     cv2.fillConvexPoly(trapez,bounds_trapez,1)
     road=trapez*frame
