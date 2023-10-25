@@ -16,10 +16,10 @@ while True:
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     trapez=np.zeros(frame.shape,dtype=np.uint8)
 
-    upper_left=(int(640*0.45),int(400*0.78))
-    upper_right=(int(640*0.55),int(400*0.78))
-    lower_left=(0,380)
-    lower_right=(640,380)
+    upper_left=(int(640*0.45),int(400*0.775))
+    upper_right=(int(640*0.55),int(400*0.775))
+    lower_left=(0,390)
+    lower_right=(640,390)
     bounds_trapez=np.array([upper_right,upper_left,lower_left,lower_right],dtype=np.int32)
     cv2.fillConvexPoly(trapez,bounds_trapez,1)
     road=trapez*frame
@@ -35,7 +35,7 @@ while True:
     sobelHorizontal=cv2.filter2D(blur,-1,sobel_horizontal,)
     sobelVertical=cv2.filter2D(blur,-1,sobel_vertical)
     sobel=np.sqrt((sobelVertical)**2+(sobelHorizontal)**2)
-    threshold=int(255/10)
+    threshold=int(255/4)
     #thresholdframe=np.where(sobel<threshold,0,255)
     aux,thresholdframe=cv2.threshold(sobel,threshold,255,cv2.THRESH_BINARY)
     #9
