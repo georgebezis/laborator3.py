@@ -26,9 +26,11 @@ while True:
     blur=np.float32(blur)
     sobelHorizontal=cv2.filter2D(blur,-1,sobel_horizontal,)
     sobelVertical=cv2.filter2D(blur,-1,sobel_vertical)
-    sobel=((sobelVertical)**2+(sobelHorizontal)**2)**1/2
-    threshold=int(255/2)
-    thresholdframe=np.where(sobel<threshold,0,255)
+    sobel=np.sqrt((sobelVertical)**2+(sobelHorizontal)**2)
+    threshold=int(255/4)
+    #thresholdframe=np.where(sobel<threshold,0,255)
+    aux,thresholdframe=cv2.threshold(sobel,threshold,255,cv2.THRESH_BINARY)
+    #9
     thresholdframe_copy=np.copy(thresholdframe)
     thresholdframe_copy[0:400,0:int(640*0.05)]=0
     thresholdframe_copy[0:400,640-int(640 * 0.05):640] = 0
@@ -38,12 +40,40 @@ while True:
     print(rightpart[0])
 
 
-    #left_xs=
-    #left_ys=
-    #right_xs=
-    #right_ys=
-
-
+    left_xs=leftpart[:,1]
+    left_ys=leftpart[:,0]
+    right_xs=rightpart[:,1]+640/2
+    right_ys=rightpart[:,0]
+    #10
+    lb,la=np.polynomial.polynomial.polyfit(left_xs,left_ys,1)
+    rb,ra=np.polynomial.polynomial.polyfit(right_xs,right_ys,1)
+    if lb>((-10)**8)|(lb<(10**8)):
+        left_top_y=0
+        left_top_x=(left_top_y-lb)/la
+        left_bottom_y=400
+        left_bottom_x=(left_bottom_y-lb)/la
+    if rb > ((-10) ** 8) | (rb <(10 ** 8)):
+        right_top_y = 0
+        right_top_x = (right_top_y - rb) / ra
+        right_bottom_y = 400
+        right_bottom_x = (right_bottom_y- rb) / ra
+         #c
+    left_top_x=0
+    left_top_y=0
+    left_bottom_x=0
+    left_bottom_y=0
+    right_bottom_x=0
+    right_top_x=0
+    right_bottom_y=0
+    right_top_y=0
+    left_top=int(left_top_x),int(left_top_y)
+    left_bottom = int(left_bottom_x), int(left_bottom_y)
+    right_top = int(right_top_x), int(right_top_y)
+    right_bottom = int(right_bottom_x), int(right_bottom_y)
+    lines=np.copy(thresholdframe_copy)
+    lines=cv2.line(lines,left_top,left_bottom,(200,0,0),10)
+    lines=cv2.line(lines,right_top,right_bottom,(100,0,0),5)
+    #lines=cv2.line(lines,(0,640*0.5),(400,640*0.5),(255,0,0),1)
 
     sobelHorizontal=cv2.convertScaleAbs(sobelHorizontal)
     sobelVertical = cv2.convertScaleAbs(sobelVertical)
@@ -51,6 +81,7 @@ while True:
     sobel=cv2.convertScaleAbs(sobel)
     thresholdframe=cv2.convertScaleAbs(thresholdframe)
     thresholdframe_copy = cv2.convertScaleAbs(thresholdframe_copy)
+    lines=cv2.convertScaleAbs(lines)
     if ret is False:
 
         break
@@ -64,6 +95,7 @@ while True:
     cv2.imshow("sobel", sobel)
     cv2.imshow("thresh",thresholdframe )
     cv2.imshow("thresh_copy", thresholdframe_copy)
+    cv2.imshow("lines", lines)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 cam.release()
