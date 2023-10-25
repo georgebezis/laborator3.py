@@ -27,6 +27,21 @@ while True:
     sobelHorizontal=cv2.filter2D(blur,-1,sobel_horizontal,)
     sobelVertical=cv2.filter2D(blur,-1,sobel_vertical)
     sobel=((sobelVertical)**2+(sobelHorizontal)**2)**1/2
+    threshold=int(255/2)
+    thresholdframe=np.where(sobel<threshold,0,255)
+    thresholdframe_copy=np.copy(thresholdframe)
+    thresholdframe_copy[0:400,0:int(640*0.05)]=0
+    thresholdframe_copy[0:400,640-int(640 * 0.05):640] = 0
+    leftpart=np.argwhere(thresholdframe_copy[0:400,0:int(640/2)]>1)
+    rightpart=np.argwhere(thresholdframe_copy[0:400,int(640/2):640])
+
+    print(rightpart[0])
+
+
+    #left_xs=
+    #left_ys=
+    #right_xs=
+    #right_ys=
 
 
 
@@ -34,6 +49,8 @@ while True:
     sobelVertical = cv2.convertScaleAbs(sobelVertical)
     blur=cv2.convertScaleAbs(blur)
     sobel=cv2.convertScaleAbs(sobel)
+    thresholdframe=cv2.convertScaleAbs(thresholdframe)
+    thresholdframe_copy = cv2.convertScaleAbs(thresholdframe_copy)
     if ret is False:
 
         break
@@ -45,6 +62,8 @@ while True:
     cv2.imshow("sobelhorizontal",sobelHorizontal)
     cv2.imshow("sobelvertical", sobelVertical)
     cv2.imshow("sobel", sobel)
+    cv2.imshow("thresh",thresholdframe )
+    cv2.imshow("thresh_copy", thresholdframe_copy)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 cam.release()
