@@ -47,7 +47,7 @@ while True:
     #10
     lb,la=np.polynomial.polynomial.polyfit(left_xs,left_ys,1)
     rb,ra=np.polynomial.polynomial.polyfit(right_xs,right_ys,1)
-    if lb>((-10)**8)|(lb<(10**8)):
+    if left_top_x>((-10)**8)|left_top_x<(10**8)):
         left_top_y=0
         left_top_x=(left_top_y-lb)/la
         left_bottom_y=400
