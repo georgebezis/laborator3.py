@@ -8,19 +8,19 @@ left_bottom=[0,0]
 right_top=[0,0]
 right_bottom=[0,0]
 while True:
-    ret, frame = cam.read()
+    ret, frameclr = cam.read()
     frame_h=400
     frame_w=640
-    frame = cv2.resize(frame,(frame_w,frame_h))
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    frameclr = cv2.resize(frameclr,(frame_w,frame_h))
+    frame = cv2.cvtColor(frameclr, cv2.COLOR_BGR2GRAY)
     trapez=np.zeros(frame.shape,dtype=np.uint8)
 
-    upper_left=(int(frame_w*0.45),int(frame_h*0.76))
-    upper_right=(int(frame_w*0.55),int(frame_h*0.76))
+    upper_left=(int(frame_w*0.45),int(frame_h*0.785))
+    upper_right=(int(frame_w*0.55),int(frame_h*0.785))
     lower_left=(0,frame_h-int(frame_h*0.0))
     lower_right=(frame_w,frame_h-int(frame_h*0.0))
     bounds_trapez=np.array([upper_right,upper_left,lower_left,lower_right],dtype=np.int32)
-    cv2.fillConvexPoly(trapez,bounds_trapez,1)
+    trapez=cv2.fillConvexPoly(trapez,bounds_trapez,1)
     road=trapez*frame
     bounds_trapez=np.float32(bounds_trapez)
     bounds_screen=np.array([(frame_w,0),(0,0),(0,frame_h),(frame_w,frame_h)])
@@ -34,14 +34,14 @@ while True:
     sobelHorizontal=cv2.filter2D(blur,-1,sobel_horizontal,)
     sobelVertical=cv2.filter2D(blur,-1,sobel_vertical)
     sobel=np.sqrt((sobelVertical)**2+(sobelHorizontal)**2)
-    threshold=int(255/7)
+    threshold=int(255/20)
     #thresholdframe=np.where(sobel<threshold,0,255)
     aux,thresholdframe=cv2.threshold(sobel,threshold,255,cv2.THRESH_BINARY)
     #9
     thresholdframe_copy=np.copy(thresholdframe)
-    thresholdframe_copy[0:frame_h,0:int(frame_w*0.05)]=0
-    thresholdframe_copy[0:frame_h,frame_w-int(frame_w * 0.05):frame_w] = 0
-    thresholdframe_copy[frame_h-int(frame_h*0.03):frame_h, 0:frame_w] = 0
+    thresholdframe_copy[0:frame_h,0:int(frame_w*0.02)]=0
+    thresholdframe_copy[0:frame_h,frame_w-int(frame_w * 0.02):frame_w] = 0
+    thresholdframe_copy[frame_h-int(frame_h*0.05):frame_h, 0:frame_w] = 0
     #thresholdframe_copy[int(0.001*400):400,0:640]=0
     leftpart=np.copy(thresholdframe_copy[0:frame_h,0:int(frame_w/2)])
     leftpart=np.argwhere(leftpart)
@@ -65,7 +65,7 @@ while True:
     left_bottom_y=frame_h
     left_bottom_x=(left_bottom_y-lb)/la
 
-    right_top_y = 0
+    right_top_y =0
     right_top_x = (right_top_y - rb) / ra
     right_bottom_y = frame_h
     right_bottom_x = (right_bottom_y- rb) / ra
@@ -73,23 +73,48 @@ while True:
 
          #c
 
-    if (-(10 **3)) < left_top_x < (10 ** 3):
-     left_top=[int(left_top_x),int(left_top_y)]
-    if (-(10 ** 3)) < left_bottom_x < (10 ** 3):
-     left_bottom = [int(left_bottom_x), int(left_bottom_y)]
-    if (-(10 ** 3)) < right_top_x < (10 ** 3):
-     right_top = [int(right_top_x), int(right_top_y)]
-    if (-(10 ** 3)) < right_bottom_x < (10 ** 3):
-     right_bottom = [int(right_bottom_x), int(right_bottom_y)]
+    if (-frame_w/2) < left_top_x < (10 ** 3):
+     left_top=[int(left_top_x),int(0)]
 
-    #print(right_top)
-    print(right_bottom)
+    if (-frame_w/2) < left_bottom_x < frame_w/2:
+     left_bottom = [int(left_bottom_x), int(frame_h)]
+    if (0) < right_top_x < (int(frame_w*1.5)):
+     right_top = [int(right_top_x), int(0)]
+    if (frame_w/2) < right_bottom_x < (frame_w*1.5):
+     right_bottom = [int(right_bottom_x), int(frame_h)]
 
+    print(right_top)
+    #print(right_bottom)
+    #print(left_bottom)
+    #print(left_top)
     lines=np.copy(thresholdframe_copy)
     lines=cv2.line(lines,left_top,left_bottom,(200,0,0),10)
     lines=cv2.line(lines,right_top,right_bottom,(100,0,0),5)
     lines=cv2.line(lines,(int(640/2),0),(int(640/2),400),(255,0,0),1)
 
+
+    roadlinesleft=np.zeros(frame.shape)
+    roadlinesleft=cv2.line(roadlinesleft, left_top, left_bottom, (250, 0, 0), 3)
+
+    magic_matrix2=cv2.getPerspectiveTransform(bounds_screen,bounds_trapez)
+    roadlinesleft=cv2.warpPerspective(roadlinesleft,magic_matrix2,(frame_w,frame_h))
+    leftcoord=np.argwhere(roadlinesleft)
+
+    roadlinesright = np.zeros(frame.shape)
+    roadlinesright = cv2.line(roadlinesright, right_top, right_bottom, (250, 0, 0), 3)
+
+    magic_matrix2 = cv2.getPerspectiveTransform(bounds_screen, bounds_trapez)
+    roadlinesright = cv2.warpPerspective(roadlinesright, magic_matrix2, (frame_w, frame_h))
+    rightcoord = np.argwhere(roadlinesright)
+
+    frame_copy = np.copy(frameclr)
+    collor_left=(50,50,250)
+    collor_right=(50,250,50)
+
+    frame_copy[leftcoord[:,0],leftcoord[:,1]]=collor_left
+    frame_copy[rightcoord[:, 0], rightcoord[:, 1]] = collor_right
+   # frame_copy=cv2.applyColorMap(frame_copy,leftcoord,collor_left)
+    #print(leftcoord)
     sobelHorizontal=cv2.convertScaleAbs(sobelHorizontal)
     sobelVertical = cv2.convertScaleAbs(sobelVertical)
     blur=cv2.convertScaleAbs(blur)
@@ -97,6 +122,8 @@ while True:
     thresholdframe=cv2.convertScaleAbs(thresholdframe)
     thresholdframe_copy = cv2.convertScaleAbs(thresholdframe_copy)
     lines=cv2.convertScaleAbs(lines)
+
+
     if ret is False:
 
         break
@@ -111,7 +138,9 @@ while True:
     cv2.imshow("thresh",thresholdframe )
     cv2.imshow("thresh_copy", thresholdframe_copy)
     cv2.imshow("lines", lines)
-    if cv2.waitKey(10) & 0xFF == ord('q'):
+    cv2.imshow("roadlines",frame_copy)
+
+    if cv2.waitKey(30) & 0xFF == ord('q'):
         break
 cam.release()
 cv2.destroyAllWindows()
