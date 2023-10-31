@@ -46,7 +46,7 @@ while True:
     #thresholdframe_copy[int(0.001*400):400,0:640]=0
 
     leftpart=np.copy(thresholdframe_copy[0:frame_h,0:int(frame_w/2)])
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10))
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10));
     leftpart= cv2.dilate(leftpart, kernel, iterations=3)
     leftpart = cv2.convertScaleAbs(leftpart)
     cv2.imshow("leftpart", leftpart)
