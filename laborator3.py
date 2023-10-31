@@ -15,8 +15,8 @@ while True:
     frame = cv2.cvtColor(frameclr, cv2.COLOR_BGR2GRAY)
     trapez=np.zeros(frame.shape,dtype=np.uint8)
 
-    upper_left=(int(frame_w*0.44),int(frame_h*0.77))
-    upper_right=(int(frame_w*0.524),int(frame_h*0.77))
+    upper_left=(int(frame_w*0.457),int(frame_h*0.769))
+    upper_right=(int(frame_w*0.51),int(frame_h*0.769))
     lower_left=(0,frame_h-int(frame_h*0.0))
     lower_right=(frame_w,frame_h-int(frame_h*0.0))
     bounds_trapez=np.array([upper_right,upper_left,lower_left,lower_right],dtype=np.int32)
@@ -27,7 +27,7 @@ while True:
     bounds_screen=np.float32(bounds_screen)
     magic_matrix=cv2.getPerspectiveTransform(bounds_trapez,bounds_screen)
     stretched=cv2.warpPerspective(road,magic_matrix,(frame_w,frame_h))
-    blur=cv2.blur(stretched,(7,7))
+    blur=cv2.blur(stretched,(11,11))
     sobel_vertical=np.float32([[-1, -2, -1],[0,0,0],[1,2,1]])
     sobel_horizontal=np.transpose(sobel_vertical)
     blur=np.float32(blur)
@@ -39,23 +39,28 @@ while True:
     aux,thresholdframe=cv2.threshold(sobel,threshold,255,cv2.THRESH_BINARY)
     #9
     thresholdframe_copy=np.copy(thresholdframe)
-    thresholdframe_copy[0:frame_h,0:int(frame_w*0.03)]=0
-    thresholdframe_copy[0:frame_h,frame_w-int(frame_w * 0.03):frame_w] = 0
+    thresholdframe_copy[0:frame_h,0:int(frame_w*0.032)]=0
+    thresholdframe_copy[0:frame_h,frame_w-int(frame_w * 0.032):frame_w] = 0
     thresholdframe_copy[frame_h-int(frame_h*0.03):frame_h, 0:frame_w] = 0
     thresholdframe_copy[0:int(frame_h * 0.05), 0:frame_w] = 0
     #thresholdframe_copy[int(0.001*400):400,0:640]=0
+
     leftpart=np.copy(thresholdframe_copy[0:frame_h,0:int(frame_w/2)])
-    leftpart=np.argwhere(leftpart)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10))
+    leftpart= cv2.dilate(leftpart, kernel, iterations=3)
+    leftpart = cv2.convertScaleAbs(leftpart)
+    cv2.imshow("leftpart", leftpart)
+    leftpartpoints=np.argwhere(leftpart)
     rightpart=np.copy(thresholdframe_copy[0:frame_h,int(frame_w/2):frame_w])
-    rightpart=np.argwhere(rightpart)
+    rightpartpoints=np.argwhere(rightpart)
 
     #print(rightpart[0])
 
 
-    left_xs=leftpart[:,1]
-    left_ys=leftpart[:,0]
-    right_xs=rightpart[:,1]+frame_w/2
-    right_ys=rightpart[:,0]
+    left_xs=leftpartpoints[:,1]
+    left_ys=leftpartpoints[:,0]
+    right_xs=rightpartpoints[:,1]+frame_w/2
+    right_ys=rightpartpoints[:,0]
     #10
     lb,la=np.polynomial.polynomial.polyfit(left_xs,left_ys,1)
     rb,ra=np.polynomial.polynomial.polyfit(right_xs,right_ys,1)
@@ -74,15 +79,15 @@ while True:
 
          #c
 
-    if (-frame_w/2) < left_top_x < (10 ** 3):
-     left_top=[int(left_top_x),int(0)]
+    if (-(10**8)) < left_top_x < (10 ** 8):
+     left_top=[int(left_top_x),int(left_top_y)]
 
-    if (-frame_w/2) < left_bottom_x < frame_w:
-     left_bottom = [int(left_bottom_x), int(frame_h)]
-    if (frame_w/2) < right_top_x < (int(frame_w*1.5)):
-     right_top = [int(right_top_x), int(0)]
-    if (-frame_w/2) < right_bottom_x < (frame_w*1.5):
-     right_bottom = [int(right_bottom_x), int(frame_h)]
+    if (-(10**8)) < left_bottom_x < 10**8:
+     left_bottom = [int(left_bottom_x), int(left_bottom_y)]
+    if (-(10**8)) < right_top_x < (10**8):
+     right_top = [int(right_top_x), int(right_top_y)]
+    if (-(10**8)) < right_bottom_x < (10**8):
+     right_bottom = [int(right_bottom_x), int(right_bottom_y)]
 
     print(right_top)
     #print(right_bottom)
@@ -141,7 +146,8 @@ while True:
     cv2.imshow("lines", lines)
     cv2.imshow("roadlines",frame_copy)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+
+    if cv2.waitKey(10) & 0xFF == ord('q'):
         break
 cam.release()
 cv2.destroyAllWindows()
