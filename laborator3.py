@@ -26,7 +26,7 @@ while True:
     frame = cv2.cvtColor(frameclr, cv2.COLOR_BGR2GRAY)
     trapez=np.zeros(frame.shape,dtype=np.uint8)
 
-    upper_left=(int(frame_w*0.45),int(frame_h*0.755))
+    upper_left=(int(frame_w*0.45),int(frame_h*0.755))##
     upper_right=(int(frame_w*0.525),int(frame_h*0.755))
     lower_left=(int(frame_h*0.1),frame_h-int(frame_h*0))
     lower_right=(frame_w-int(frame_h*0.1),frame_h-int(frame_h*0))
